@@ -1,12 +1,16 @@
 ---
 title: "Polarization: Concepts and Empirical Data"
 author: "Jan Lorenz"
-format: html
+format: 
+  html:
+   embed-resources: true
+   code-fold: true
 editor_options: 
   chunk_output_type: console
 ---
 
 ```{r}
+#| message: false
 source("functions.R")
 library(patchwork)
 ```
@@ -72,18 +76,6 @@ stacked + side_by_side + same + different + plot_layout(nrow = 2)
 ggsave("polarization_groupbased.pdf", width = 5, height = 4)
 ```
 
-```{r}
-o <- tibble(
- group = rep(c(1,2), each = 11), 
- opinion = rep(0:10,2), 
- freq = c(confined_discretized_dnorm(mean = 3.5, sd = 1)/4 + 
-           confined_discretized_dnorm(mean = 7, sd = 1)/4, 
-          confined_discretized_dnorm(mean = 3, sd = 1)/4 + 
-           confined_discretized_dnorm(mean = 6.5, sd = 1)/4)
-)
-o |> ggplot(aes(opinion, freq, fill = factor(group))) + geom_col()
-o |> ggplot(aes(opinion, freq, fill = factor(group))) + geom_col(position = "identity", alpha = 0.5)
-```
 
 ## Examples 
 
@@ -119,6 +111,8 @@ test_df <- tibble(maxpol, maxparity1, maxparity2, maxparity3, maxparity3_skew, m
  pivot_longer(-x, names_to = "type", values_to = "p", cols_vary = "slowest") |> 
  mutate(p = p/sum(p), .by = type)
 
+test_df |> ggplot(aes(x,p)) + geom_col() + facet_wrap(~type)
+
 test_df |> 
  summarize(dist_sd = dist_sd(p), 
            dist_pol0 = dist_pol(p), 
@@ -127,9 +121,6 @@ test_df |>
            dist_pol15 = dist_pol(p, alpha = 1.5), 
            .by = type) |> 
  knitr::kable()
-
-
-test_df |> ggplot(aes(x,p)) + geom_col() + facet_wrap(~type)
 ```
 
 ## Indices of Diversity and Concentration
