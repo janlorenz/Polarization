@@ -57,7 +57,7 @@ same <- o |> ggplot(aes(opinion, freq, fill = factor(group))) + geom_col(width =
  scale_fill_manual(values = c("red","blue")) +
  scale_x_continuous(breaks = c(0,5,10), minor_breaks = 0:10) +
  scale_y_continuous(breaks =c(), minor_breaks = seq(0,1,0.02)) +
- labs(x="", y="", title = "Groups identical", tag = "B1") +
+ labs(x="", y="", title = "Identical groups", tag = "B1") +
  theme_minimal() + guides(fill = "none") + theme(plot.title = element_text(hjust = 0.5))
 o <- tibble(
  group = rep(c(1,2), each = 11), 
@@ -70,10 +70,12 @@ different <- o |> ggplot(aes(opinion, freq, fill = factor(group))) +
  scale_fill_manual(values = c("red","blue")) +
  scale_x_continuous(breaks = c(0,5,10), minor_breaks = 0:10) +
  scale_y_continuous(breaks =c(), minor_breaks = seq(0,1,0.02)) +
- labs(x="", y="", title = "Groups different", tag = "B2") +
+ labs(x="", y="", title = "Different groups", tag = "B2") +
  theme_minimal() + guides(fill = "none") + theme(plot.title = element_text(hjust = 0.5))
 stacked + side_by_side + same + different + plot_layout(nrow = 2)
 ggsave("polarization_groupbased.pdf", width = 5, height = 4)
+(stacked + side_by_side + same + different) + plot_layout(nrow = 1)
+ggsave("polarization_groupbased_wide.pdf", width = 9.5, height = 2.5)
 ```
 
 
