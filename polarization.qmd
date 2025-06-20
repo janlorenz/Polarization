@@ -1,0 +1,160 @@
+---
+title: "Polarization: Concepts and Empirical Data"
+author: "Jan Lorenz"
+format: html
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+source("functions.R")
+library(patchwork)
+```
+
+## Dispersion
+
+```{r}
+expand_grid(sigma = c(0.5, 2,3,7,500), opinion = 0:10) |> 
+  mutate(freq = confined_discretized_dnorm(mean = 4.5, sd = mean(sigma)), .by = sigma) |> 
+  ggplot(aes(opinion,freq)) + geom_col() + facet_wrap(~sigma, ncol = 5)
+```
+
+
+
+## Within- and between-group polarization
+
+```{r}
+o <- tibble(
+ group = rep(c(1,2), each = 11), 
+ opinion = rep(0:10,2), 
+ freq = c(confined_discretized_dnorm(mean = 3.5, sd = 1.65)/2,
+          confined_discretized_dnorm(mean = 7, sd = 1.65)/2)
+)
+stacked <- o |> ggplot(aes(opinion, freq, fill = factor(group))) + geom_col(width = 0.8, alpha = 0.6) +
+ scale_fill_manual(values = c("red","blue")) +
+ scale_x_continuous(breaks = c(0,5,10), minor_breaks = 0:10) +
+ scale_y_continuous(breaks =c(), minor_breaks = seq(0,1,0.02)) +
+ labs(x="", y="", title = "Groups stacked", tag = "A1") +
+ theme_minimal() + guides(fill = "none") + theme(plot.title = element_text(hjust = 0.5))
+side_by_side <- o |> ggplot(aes(opinion, freq, fill = factor(group))) + 
+ geom_col(position = position_identity(), width = 0.8, alpha = 0.6) + 
+ scale_fill_manual(values = c("red","blue")) +
+ scale_x_continuous(breaks = c(0,5,10), minor_breaks = 0:10) +
+ scale_y_continuous(breaks =c(), minor_breaks = seq(0,1,0.02)) +
+ labs(x="", y="", title = "Groups overplotting", tag = "A2") +
+ theme_minimal() + guides(fill = "none") + theme(plot.title = element_text(hjust = 0.5))
+o <- tibble(
+ group = rep(c(1,2), each = 11), 
+ opinion = rep(0:10,2), 
+ freq = c(confined_discretized_dnorm(mean = 7, sd = 1)/4 + confined_discretized_dnorm(mean = 3.5, sd = 1)/4,
+          confined_discretized_dnorm(mean = 7, sd = 1)/4 + confined_discretized_dnorm(mean = 3.5, sd = 1)/4)
+)
+same <- o |> ggplot(aes(opinion, freq, fill = factor(group))) + geom_col(width = 0.8, alpha = 0.6) +
+ scale_fill_manual(values = c("red","blue")) +
+ scale_x_continuous(breaks = c(0,5,10), minor_breaks = 0:10) +
+ scale_y_continuous(breaks =c(), minor_breaks = seq(0,1,0.02)) +
+ labs(x="", y="", title = "Groups identical", tag = "B1") +
+ theme_minimal() + guides(fill = "none") + theme(plot.title = element_text(hjust = 0.5))
+o <- tibble(
+ group = rep(c(1,2), each = 11), 
+ opinion = rep(0:10,2), 
+ freq = c(confined_discretized_dnorm(mean = 7, sd = 1)/2,
+          confined_discretized_dnorm(mean = 3.5, sd = 1)/2)
+)
+different <- o |> ggplot(aes(opinion, freq, fill = factor(group))) + 
+ geom_col(width = 0.8, alpha = 0.6) + 
+ scale_fill_manual(values = c("red","blue")) +
+ scale_x_continuous(breaks = c(0,5,10), minor_breaks = 0:10) +
+ scale_y_continuous(breaks =c(), minor_breaks = seq(0,1,0.02)) +
+ labs(x="", y="", title = "Groups different", tag = "B2") +
+ theme_minimal() + guides(fill = "none") + theme(plot.title = element_text(hjust = 0.5))
+stacked + side_by_side + same + different + plot_layout(nrow = 2)
+ggsave("polarization_groupbased.pdf", width = 5, height = 4)
+```
+
+```{r}
+o <- tibble(
+ group = rep(c(1,2), each = 11), 
+ opinion = rep(0:10,2), 
+ freq = c(confined_discretized_dnorm(mean = 3.5, sd = 1)/4 + 
+           confined_discretized_dnorm(mean = 7, sd = 1)/4, 
+          confined_discretized_dnorm(mean = 3, sd = 1)/4 + 
+           confined_discretized_dnorm(mean = 6.5, sd = 1)/4)
+)
+o |> ggplot(aes(opinion, freq, fill = factor(group))) + geom_col()
+o |> ggplot(aes(opinion, freq, fill = factor(group))) + geom_col(position = "identity", alpha = 0.5)
+```
+
+## Examples 
+
+```{r}
+# Example distributions
+uniform <- rep(1,11) 
+maxparity1 <- c(0,0,0,0,1,0,1,0,0,0,0)
+maxparity2 <- c(0,0,0,0,1,0,0,1,0,0,0)
+maxparity3 <- c(0,0,0,1,0,0,0,1,0,0,0)
+maxparity3_skew <- c(1,0,0,0,1,0,0,0,0,0,0)
+maxparity5 <- c(0,0,1,0,0,0,0,0,1,0,0)
+maxparity7 <- c(0,1,0,0,0,0,0,0,0,1,0)
+maxparity3_neutral <- c(0,0,0,1,0,1,0,1,0,0,0)
+maxparity3_skew_neutral  <- c(1,0,0,0,1,0,1,0,0,0,0)
+maxparity5_neutral <- c(0,0,1,0,0,1,0,0,1,0,0)
+maxparity7_neutral <- c(0,1,0,0,0,1,0,0,0,1,0)
+maxdistance19 <- c(9,rep(0,9),1)
+maxdistance28 <- c(8,rep(0,9),2)
+maxdistance37 <- c(7,rep(0,9),3)
+maxdistance46 <- c(6,rep(0,9),4)
+zigzag6 <- c(1,rep(c(0,1),5))
+zigzag5 <- c(0,rep(c(1,0),5))
+maxpol <- c(1,rep(0,9),1)
+minpolneutral <- c(rep(0,5),1,rep(0,5))
+minpolextreme <- c(1,rep(0,10))
+
+# Test df
+test_df <- tibble(maxpol, maxparity1, maxparity2, maxparity3, maxparity3_skew, maxparity5, maxparity7, 
+       maxparity3_neutral, maxparity3_skew_neutral, maxparity5_neutral, maxparity7_neutral, 
+       maxdistance19, maxdistance28, maxdistance37, maxdistance46, 
+       uniform, zigzag5, zigzag6, 
+       minpolneutral, minpolextreme, x = 0:10) |> 
+ pivot_longer(-x, names_to = "type", values_to = "p", cols_vary = "slowest") |> 
+ mutate(p = p/sum(p), .by = type)
+
+test_df |> 
+ summarize(dist_sd = dist_sd(p), 
+           dist_pol0 = dist_pol(p), 
+           dist_pol05 = dist_pol(p, alpha = 0.5),
+           dist_pol1 = dist_pol(p, alpha = 1),
+           dist_pol15 = dist_pol(p, alpha = 1.5), 
+           .by = type) |> 
+ knitr::kable()
+
+
+test_df |> ggplot(aes(x,p)) + geom_col() + facet_wrap(~type)
+```
+
+## Indices of Diversity and Concentration
+
+The following measure are based on a set of $n$ labels (unordered categorical data) and a population where each individual has one of these labels such that we can call $p = [p_1,\dots,p_n]$ is a stochastic vector of frequencies how often each label appears in the population (thus $p_i \geq 0$ and $\sum_{i=1}^n p_i = 1$. 
+
+A common measure of *concentration* of labels is the Simpson index
+
+$$\text{Simpson}(p) = \sum_{i=1}^n p_i^2$$
+This is also called Herfindahl-Hirschman index as, e.g., use for market share of firms. TODO Citations. 
+
+It can be derived from a more general measure diversity
+
+$$\text{D}_{\text{dis}}(p) = \sum_{i,j=1}^n p_ip_j \text{dis}(i,j)$$
+where $\text{dis}(i,j)$ is the *discrepancy* (or *distance*, or *antagonism*) between labels $i$ and $j$. Discrepancy can be seen as a measure of distance between two label and is typically thought to be normalized such that the discrpancy between a label and itself is zero and the maximal distance between any two labels is one (if we have a bounded set of labels this does always exist). The simplest measure is *non-identity* 
+
+$$\text{non-id}(i,j) = \begin{cases} 0 & \text{if $i = j$} \\ 1 &  \text{if $i \neq j$}  \end{cases}$$ 
+
+The diversity measure with $\text{non-id}$ is has vanishing terms if and only if $i=j$ so it is easy to see
+
+$\text{Simpson}(p) = 1 - \text{D}_\text{non-id}(p)$. 
+
+In political science there is a directly related measure called the *effective number of parties* which we can re-label here more generally as the *effective number of labels*. 
+
+$$\text{effNum}(p) = \frac{1}{\text{Simpson}(p)}$$
+It is easy to see that $\text{effNum}(p) = n$ when all labels have a equal share of $1/n$ in the population, while $\text{effNum}(p) = 1$ if and only if only one label is used such that $p_i = 0$ for all $i$ except one. 
+
+
